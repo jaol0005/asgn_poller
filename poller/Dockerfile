@@ -6,6 +6,6 @@ WORKDIR /poller
 
 COPY poller.sh .
 
-RUN chmod +x poller.sh
+RUN chmod +x poller.sh && mkdir -p /poller/logs
 
-CMD ["./poller.sh"]
+CMD ["/poller/poller.sh"]

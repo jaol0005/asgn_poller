@@ -1,65 +1,35 @@
 # asgn_poller
 
-A simple web service and poller system. The web service serves data via HTTP, and the poller periodically fetches and logs this data.
+A poller service that fetches data from a web service every 5 seconds and logs it with timestamps.
 
 ## Structure
 
 - `web/` — Web service (serves `data.txt` on port 8000)
-  - `Dockerfile` — Docker configuration
+  - `Dockerfile` — Python HTTP server
   - `data.txt` — Sample data file
-- `poller/poller.sh` — Poller script (fetches data every 5 seconds and logs it)
+- `poller/` — Poller service
+  - `Dockerfile` — Alpine + curl image
+  - `poller.sh` — Script that polls the web service
+- `docker-compose.yml` — Orchestrates both services
 
-## Prerequisites
-
-- Docker
-- curl
-
-## Quick Start
-
-### 1. Clone or download the project
+## Running
 
 ```bash
-cd asgn_poller
+docker-compose up
 ```
 
-### 2. Build and run the web server
+This starts both services. The poller will:
+- Fetch data from `http://web:8000/data.txt` every 5 seconds
+- Log results to `poller/logs/poller.log` with timestamps
+- Handle failures (timeouts, non-200 responses)
 
+View logs:
 ```bash
-cd web
-docker build -t web-server .
-docker run -d -p 8000:8000 web-server
+tail -f poller/logs/poller.log
 ```
 
-Verify it works: open `http://localhost:8000/data.txt` in your browser. You should see the contents of `data.txt`.
+## What Each Part Does
 
-### 3. Run the poller
-
-```bash
-cd poller
-chmod +x poller.sh
-mkdir -p logs
-./poller.sh
-```
-
-The poller will fetch data from the web service every 5 seconds and append entries to `logs/poller.log`.
-
-### 4. Check the logs
-
-```bash
-tail -f logs/poller.log
-```
-
-## Stopping
-
-- Stop the poller: Press `Ctrl+C` in its terminal
-- Stop the web server:
-  ```bash
-  docker ps
-  docker stop <container-id>
-  ```
-
-## Notes for Review
-
-- The web service uses Python's built-in HTTP server for simplicity.
-- The poller expects the web service to be running on `localhost:8000`.
-- Log entries follow the format: `TIMESTAMP | temperature=XX | city=XX | status=XX`
+- **web service**: Serves `data.txt` via HTTP
+- **poller service**: Fetches data, extracts fields with grep, appends timestamped entries
+- **docker-compose.yml**: Defines both services so they can communicate by name (`web`)

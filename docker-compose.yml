@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  web:
+    build: ./web
+    ports:
+      - "8000:8000"
+
+  poller:
+    build: ./poller
+    volumes:
+      - ./poller/logs:/poller/logs
+    depends_on:
+      - web

@@ -1,7 +1,7 @@
 #!/bin/sh
 
-URL="http://localhost:8000/data.txt"
-LOGFILE="/home/ykke/asgn_poller/poller/logs/poller.log"
+URL="http://web:8000/data.txt"
+LOGFILE="/poller/logs/poller.log"
 
 while true
 do
