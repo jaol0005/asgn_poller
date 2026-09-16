@@ -1,0 +1,17 @@
+services:
+  web:
+    build: ./web
+    container_name: web
+    ports:
+      - "8000:8000"
+
+  poller:
+    build: ./poller
+    container_name: poller
+    depends_on:
+      - web
+    environment:
+      - WEB_URL=http://web:8000/data.txt
+      - INTERVAL=5
+      - MAX_RETRIES=5
+      

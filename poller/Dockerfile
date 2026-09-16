@@ -1,11 +1,9 @@
-FROM alpine:latest
+FROM alpine:3.20
 
 RUN apk add --no-cache curl
 
-WORKDIR /poller
-
+WORKDIR /app
 COPY poller.sh .
-
 RUN chmod +x poller.sh
 
-CMD ["./poller.sh"]
+ENTRYPOINT ["./poller.sh"]
