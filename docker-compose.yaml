@@ -1,0 +1,12 @@
+services:
+  web:
+    image: python:3.12-slim
+    working_dir: /data
+    volumes:
+      - ./web:/data
+    command: python3 -m http.server 8000
+
+  poller:
+    build: ./poller
+    depends_on:
+      - web
