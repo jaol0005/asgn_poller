@@ -15,7 +15,12 @@ A poller service that fetches data from a web service every 5 seconds and logs i
 ## Running
 
 ```bash
-docker-compose up
+docker compose up
+```
+
+*Note: Use `docker compose` (with space) for Docker v20.10+. If you get 'command not found', install with:*
+```bash
+sudo apt install docker-compose-plugin
 ```
 
 This starts both services. The poller will:
