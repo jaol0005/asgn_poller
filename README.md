@@ -6,4 +6,6 @@ This is a Docker compose project which contains two containers working together.
 HOW DO I USE IT?
 To start the build you type: "docker compose up --build" in the terminal and the project will be asambled. If it's asambled correctly it will begin returning the timestamp, otherwise it will return a error code.
 
+Make sure to be in the right path of the files. Be within "asgn_poller".
+
 Any questions feel free to message us! 
