@@ -1,57 +1,31 @@
 #!/bin/sh
-# poller.sh - polls the web service and logs the fields we care about
-set -u
 
-WEB_URL="${WEB_URL:-http://web:8000/data.txt}"
-INTERVAL="${INTERVAL:-5}"
-LOG_FILE="${LOG_FILE:-/var/log/poller/poller.log}"
-MAX_RETRIES="${MAX_RETRIES:-5}"
+URL="http://localhost:8000/data.txt"
+LOGFILE="/home/ykke/asgn_poller/poller/logs/poller.log"
 
-mkdir -p "$(dirname "$LOG_FILE")"
+while true
+do
+    DATA=$(curl -fsS --max-time 5 "$URL")
 
-log() {
-    echo "$(date -u +'%Y-%m-%dT%H:%M:%SZ') $1" | tee -a "$LOG_FILE"
-}
+    if [ $? -eq 0 ]; then
 
-log "poller starting, target=$WEB_URL interval=${INTERVAL}s"
+        TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
 
-retries=0
+        TEMPERATURE=$(echo "$DATA" | grep "^temperature=")
+        CITY=$(echo "$DATA" | grep "^city=")
+        STATUS=$(echo "$DATA" | grep "^status=")
 
-while true; do
-    response=$(curl --silent --show-error --fail --max-time 5 \
-        --write-out "HTTPSTATUS:%{http_code}" "$WEB_URL" 2>/tmp/curl_err)
-    curl_exit=$?
+        echo "$TIMESTAMP | $TEMPERATURE | $CITY | $STATUS" >> "$LOGFILE"
 
-    if [ $curl_exit -ne 0 ]; then
-        err_msg=$(cat /tmp/curl_err)
-        retries=$((retries + 1))
-        log "ERROR curl_exit=$curl_exit retries=$retries msg=\"$err_msg\""
+        echo "[$TIMESTAMP] Poll successful"
 
-        if [ "$retries" -ge "$MAX_RETRIES" ]; then
-            log "WARN service unreachable after $MAX_RETRIES attempts, will keep trying"
-            retries=0
-        fi
+    else
 
-        sleep "$INTERVAL"
-        continue
+        TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
+
+        echo "[$TIMESTAMP] Poll failed"
+
     fi
 
-    http_status=$(echo "$response" | grep -o "HTTPSTATUS:[0-9]*" | cut -d':' -f2)
-    body=$(echo "$response" | sed -e 's/HTTPSTATUS:[0-9]*//')
-
-    if [ "$http_status" != "200" ]; then
-        log "ERROR non-200 response status=$http_status"
-        sleep "$INTERVAL"
-        continue
-    fi
-
-    retries=0
-
-    temperature=$(echo "$body" | grep '^temperature=' | cut -d'=' -f2)
-    city=$(echo "$body" | grep '^city=' | cut -d'=' -f2)
-    status=$(echo "$body" | grep '^status=' | cut -d'=' -f2)
-
-    log "OK status=$http_status temperature=${temperature:-NA} city=${city:-NA} weather_status=${status:-NA}"
-
-    sleep "$INTERVAL"
+    sleep 5
 done
